@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Claude Desktop お試しコース</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf9f5; --ink: #1d1d1f; --muted: #6b6b70;
+    --accent: #d97757; --accent2: #0b6e99; --gold: #f2b632;
+    --line: #e3e0da; --done: #2a7a3b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.65; padding-bottom: 80px; }
+  header { position: sticky; top: 0; background: rgba(250,249,245,.95); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 14px 24px; z-index: 10; }
+  header h1 { font-size: 20px; font-weight: 800; }
+  header .sub { font-size: 13px; color: var(--muted); }
+  #bar { height: 8px; background: #eeece7; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  #fill { height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width .25s; }
+  #count { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px; }
+  .step { background: #fff; border: 1px solid var(--line); border-radius: 16px; margin-bottom: 22px; overflow: hidden; }
+  .step > .head { padding: 16px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; cursor: pointer; }
+  .step > .head:hover { background: #fdf8f5; }
+  .step .no { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: .08em; white-space: nowrap; }
+  .step .no .min { color: var(--muted); font-weight: 600; margin-left: 6px; }
+  .step h2 { font-size: 19px; font-weight: 800; flex: 1; }
+  .step .stat { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .step .stat.all { color: var(--done); font-weight: 700; }
+  .step .body { padding: 8px 22px 18px; }
+  .step.collapsed .body { display: none; }
+  .note { font-size: 14px; color: var(--muted); margin: 10px 0 6px; }
+  label.item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 8px; border-radius: 10px; cursor: pointer; }
+  label.item:hover { background: #f7f4ee; }
+  label.item input { width: 20px; height: 20px; margin-top: 4px; accent-color: var(--accent); flex-shrink: 0; }
+  label.item .t { font-size: 16px; }
+  label.item.done .t { color: var(--muted); text-decoration: line-through; text-decoration-color: #c9c5bd; }
+  .t strong { font-weight: 800; }
+  .t .sub { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .tags { padding: 10px 22px 16px; border-top: 1px dashed var(--line); }
+  .tag { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 3px 12px; border-radius: 999px; margin: 3px 6px 3px 0; }
+  .tag.deban { background: #f8e3db; color: var(--accent); }
+  .tag.check { background: #e2f0f8; color: var(--accent2); }
+  .quote { border-left: 5px solid var(--gold); background: #fff8e6; padding: 10px 18px; border-radius: 0 10px 10px 0; font-size: 14.5px; margin: 8px 0; }
+  .warn { border-left: 5px solid var(--accent); background: #fdf1ec; padding: 10px 18px; border-radius: 0 10px 10px 0; font-size: 14.5px; margin: 8px 0; }
+  code { font-family: "SF Mono", Menlo, monospace; background: #eeece7; padding: 1px 7px; border-radius: 6px; font-size: .88em; }
+  footer { max-width: 860px; margin: 0 auto; padding: 0 24px; font-size: 13px; color: var(--muted); }
+  #reset { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  #reset:hover { border-color: var(--accent); color: var(--accent); }
+  #alldone { display: none; text-align: center; font-size: 22px; font-weight: 800; color: var(--accent); padding: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claude Desktop 機能お試しコース <span class="sub">講師用・約100分 / 今夜のデモリハ兼用</span></h1>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="count"></div>
+</header>
+<main id="course">
+
+<section class="step" data-step="0">
+  <div class="head"><span class="no">STEP 0<span class="min">5分</span></span><h2>事前チェック</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t">Claude Desktopを<strong>最新版にアップデート</strong><span class="sub">古いとCowork周りのUIが違う可能性</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>ログアウト→ログイン</strong>を一度体験<span class="sub">参加者が詰まる箇所。案内が具体的になる</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">進め方: スライドの用語と実際のUI文言の<strong>ズレをメモ</strong>しながら進める</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="1">
+  <div class="head"><span class="no">STEP 1<span class="min">10分</span></span><h2>チャット基本 + モデル切替</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t">新規チャットで軽い質問 → <strong>モデル選択メニュー</strong>の場所と表記を確認<span class="sub">Haiku / Sonnet / Opus / Fable がどう並ぶか</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">同じ質問を<strong>HaikuとSonnet</strong>で投げて速度・質の差を体感</span></label>
+    <label class="item"><input type="checkbox"><span class="t">画像を1枚添付して読ませる<span class="sub">領収書デモの最小版</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">スクリーンショットを貼って「これ何？」<span class="sub">困りごとコースの原型</span></span></label>
+  </div>
+  <div class="tags"><span class="tag deban">出番: モデルの使い分けスライド(day1-23)</span><span class="tag check">確認: モデル切替UIの正確な場所</span></div>
+</section>
+
+<section class="step" data-step="2">
+  <div class="head"><span class="no">STEP 2<span class="min">30分</span></span><h2>Cowork コア（最重要）</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><strong>Coworkの開き方</strong>を確認<span class="sub">スライドでは「Claude Desktopを開く→Coworkを選ぶ→フォルダを選ぶ」と説明中</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><code>demo/reset_demo.sh</code> で <code>~/Desktop/inzai-brew-pub</code> を生成<span class="sub">講師のデモ用。参加者には <code>claude-practice</code> を作らせる</span></span></label>
+    <div class="quote"><strong>フォルダを「作業場」にする手順（本番と同じ）</strong>: ① Coworkで<strong>プロジェクトを作成</strong>（例:「印西ブリューパブ」）→ ② 入力欄の「Work in a folder」で <code>inzai-brew-pub</code> を指定 → ③ macOSのフォルダアクセス許可ダイアログが出たら許可 → ④ 以後このセッションの読み書きはそのフォルダの中で行われる。別の仕事をするときは新しいセッションで別フォルダを選ぶ。<br><span style="color:var(--muted)">※実際のボタン名・日本語表記をメモ（スライド11と sanka-checklist.html の文言合わせ用）</span></div>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ①=メインデモ（開業の仕方→酒税→国税庁資料）</strong>: プロジェクト「印西ブリューパブ」で「ブリューパブを開業したい。開業の仕方を教えて」→ 手順に酒類製造免許（酒税法）が出るか → 「え、酒税？ 国税庁の資料をダウンロードしてフォルダに入れて、要点を1枚にまとめて」→ 内蔵ブラウザで手引きPDFを取得し <code>参考資料/</code> に保存、<code>酒税_要点.md</code> ができるか → <strong>成果物を保存</strong><span class="sub">観察: 許可ダイアログ（DLは毎回確認） / 進捗表示 / 所要時間(=待ち時間トークの長さ) / 国税庁のどのページ・PDFに行ったか（URLをメモ） / 要点の数字（ビール免許60kl・発泡酒6kl・所轄税務署）が資料と合っているか</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">追い質問リハ:「子ども向け教室を開くなら必要な許認可は？」「配食サービスなら？」「輸入販売なら？」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ②=領収書デモ</strong>: 領収書写真5〜10枚→「日付・店名・金額を読み取って、コピーをリネームして経費台帳CSVに」→ 精度と所要時間を確認、成果物保存</span></label>
+    <label class="item"><input type="checkbox"><span class="t">タスクを途中で<strong>止める / 追加指示する</strong>操作<span class="sub">本番で暴走したときの止め方</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>並列タスク</strong>: 2つ同時に走らせる<span class="sub">「複数の仕事を並行で」スライドの裏取り</span></span></label>
+  </div>
+  <div class="tags"><span class="tag deban">出番: day1デモ①② / ハンズオン全コース / スライド11「始め方と作法」</span><span class="tag check">確認: 許可ダイアログの実文言</span></div>
+</section>
+
+<section class="step" data-step="3">
+  <div class="head"><span class="no">STEP 3<span class="min">10分</span></span><h2>設定のお作法（当日全員でやる箇所）</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t">設定→プライバシー系で「<strong>モデル改善への協力</strong>」トグルの正確な場所・文言を確認 → <strong>スクショ</strong><span class="sub">当日プロジェクタに映して全員で操作する用</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>使用量</strong>画面の場所・表示内容を確認 → <strong>スクショ</strong></span></label>
+    <label class="item"><input type="checkbox"><span class="t">実際にオフにする（既にオフならオン→オフを一往復して画面遷移を見る）</span></label>
+  </div>
+  <div class="tags"><span class="tag deban">出番: day1 設定のお作法スライド</span><span class="tag check">UI文言がスライドと違ったら要修正</span></div>
+</section>
+
+<section class="step" data-step="4">
+  <div class="head"><span class="no">STEP 4<span class="min">15分</span></span><h2>ブラウザの中で働かせる — 内蔵ブラウザ優先、Chrome拡張は比較用</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><strong>Settings &gt; Cowork &gt; Preferred browser = Built-in browser</strong> にし、内蔵ブラウザで卸サイト・開業準備用Google・Amazonにログイン（2FAを通す）<span class="sub">別セッションを開いてログインが残っているか / 「Import cookies」がサイト単位で選べるか（全部入らないこと）</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ③-1（本命）: 仕入れ候補の比較</strong> — 事業について.md を見せた上で「うちの店で最初に置くゲストビールを検討したい。卸サイトでIPAとラガーを2〜3銘柄ずつ、価格・容量・産地・醸造所で比較表にして 仕入れ候補.md に保存して」<span class="sub">Manualモードで「計画→サイト許可→操作」の流れ / 所要時間 / 映る範囲（卸価格・他顧客・管理画面が出ないこと）。カートに入れる操作はさせない</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ③-2（時間があれば）</strong>: 開業TODOメモを見せて「今週の作業をGoogleカレンダーに仮押さえして、設備業者への見積もり依頼メールをGmailに下書きして」<span class="sub">専用「開業準備」カレンダーで私用予定を映さない/Gmail宛先は自分のダミー・下書き止まり</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">Chromeウェブストアから拡張もインストール → サインイン → サイドパネルの開き方確認<span class="sub">「自分のChromeの中で働く」もう一つの入口として紹介するため。デモは内蔵ブラウザで</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">安全なページで操作（クリック・入力）を1回見る</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>ログイン済みサイト</strong>で動くことを確認（例: 自分のGoogleアカウントのページ）<span class="sub">あなたのブラウザの中で動くので、ログインした状態のサイトを操作できるのが最大の強み</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>権限モード</strong>（Manual=毎回確認 / Auto / Skip）と<strong>サイトごとの許可設定</strong>の場所を確認<span class="sub">講座では「Manual（毎回確認）のまま使う」と案内する予定</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ⑤（第2回用）: Amazon領収書回収</strong> — 注文履歴から領収書を保存させてみる<span class="sub">確認: 住所・本名・購入品が画面に映る範囲 / 2FAで止まらないか / Manualで間延びしないか（amazonのみAuto検討）/ 所要時間。ダメそうなら事前録画に切替</span></span></label>
+    <div class="warn">動きが遅い/不安定なら、当日デモは<strong>事前録画 or スクショ紙芝居</strong>に切り替える判断をここで。送信・削除・購入を伴う操作はSkipにしない。</div>
+  </div>
+  <div class="tags"><span class="tag deban">出番: day1デモ③ちょい見せ(16)</span></div>
+</section>
+
+<section class="step" data-step="5">
+  <div class="head"><span class="no">STEP 5<span class="min">10分</span></span><h2>モバイル連携 + Dispatch</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t">iPhoneのClaudeアプリで、PCの今日の会話が<strong>同期</strong>されているか確認</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>リハ④=クロージング演出</strong>: iPhoneから「講座アンケートの集計フォーマットを作って」を<strong>音声入力</strong>でPCへ<strong>Dispatch</strong> → 数分後にPCで成果物確認<span class="sub">「喋るだけで事務所のPCが働く」演出。Dispatchの入口・音声入力ボタンの場所・PC側の条件（オンライン・アプリ起動）をメモ</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">Cowork Web版（claude.ai）でもセッションが見えるか確認</span></label>
+  </div>
+  <div class="tags"><span class="tag deban">出番: 「移動していても続きができる」（口頭+実演）</span></div>
+</section>
+
+<section class="step" data-step="6">
+  <div class="head"><span class="no">STEP 6<span class="min">10分</span></span><h2>メモリとプロジェクト — 「社員が育つ」機能</h2><span class="stat"></span></div>
+  <div class="body">
+    <div class="quote">CLAUDE.mdに相当する「コンテキストを貯める」層が3つ: <strong>メモリ</strong>（全会話横断の自分情報）/ <strong>プロジェクト</strong>（案件ごとのナレッジ）/ <strong>作業フォルダのファイル</strong>（Coworkが読む）。講座の肝になり得るので必ず触る。</div>
+    <label class="item"><input type="checkbox"><span class="t"><strong>メモリ</strong>: 設定でオン/オフ・管理画面の場所を確認 →「私は印西市でClaude講座の講師をしています。覚えておいて」→ 別の新規チャットで「私が今やっている講座は？」と聞いて思い出すか確認</span></label>
+    <label class="item"><input type="checkbox"><span class="t">メモリ管理画面で<strong>閲覧・編集・削除</strong>を一度やる<span class="sub">「消せるの？」と聞かれる想定</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>プロジェクト</strong>を1つ作り、ナレッジに資料（例: kikaku.md）を入れて質問 → プロジェクト内でだけ文脈が効くことを確認</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>作業フォルダ</strong>に「事業について.md」を置いてCoworkにタスク依頼 → 文脈として読むか確認<span class="sub">ハンズオンで参加者にやらせる予定の操作</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">チャットで覚えさせた内容が<strong>Coworkでも効くか</strong>確認<span class="sub">2026/8/26のメモリ統合の裏取り</span></span></label>
+  </div>
+  <div class="tags"><span class="tag deban">出番: day1新スライド「その社員は、使うほど育つ」+ ハンズオン冒頭の「事業について」メモ</span></div>
+</section>
+
+<section class="step" data-step="7">
+  <div class="head"><span class="no">STEP 7<span class="min">15分</span></span><h2>Design でロゴ + Artifact「開業計画1枚」（デモ④・来週予告用）</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><strong>Claude Design</strong>（サイドバー「Design」）で「印西のブリューパブのロゴ。木樽とビールのあたたかい色で、3案」→ 保存<span class="sub">当日はインラインコメントで1箇所直すだけ。直す箇所を決めておく（例: 文字を太く）。Export（PDF/画像/Claude Codeへハンドオフ）の場所も確認</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>Artifact「開業計画1枚」</strong>: 「今日の成果（立地の結論・経費台帳・仕入れ候補・ロゴ）を、開業計画1枚のArtifactにまとめて」<span class="sub">来週予告で見せる。第2回デモ②の入力になるので demo/master/ にも保存。本番はライブ生成せず、事前に作ったものを見せる</span></span></label>
+  </div>
+</section>
+
+<section class="step" data-step="8">
+  <div class="head"><span class="no">STEP 8<span class="min">10分</span></span><h2>余裕があれば</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><strong>並列タスク</strong>: デモ①を走らせたまま別セッションで領収書②を開始<span class="sub">新規セッションのボタン位置 / 走行中の見え方 / 同じフォルダを2セッションで選べるか（選べたとき警告が出るか）</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><strong>Scheduled</strong> と <strong>Dispatch</strong> の入口（サイドバー）を確認<span class="sub">DispatchはPC起動・スリープ解除が条件。クロージング演出前に講師PCのスリープを切る</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">コネクタ/拡張機能の設定画面を眺める<span class="sub">GoogleドライブやMCP系。第2回で聞かれる可能性</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">音声入力があるか確認<span class="sub">高齢の参加者に喜ばれる可能性</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">シークレット（メモリに残らない）チャットの入口確認<span class="sub">機密相談の逃げ道として案内できる</span></span></label>
+  </div>
+</section>
+
+<section class="step" data-step="8">
+  <div class="head"><span class="no">仕上げ<span class="min">直前</span></span><h2>講座直前チェック</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t">リハ①②③の<strong>成果物ファイルをバックアップ</strong>フォルダに保存済み</span></label>
+    <label class="item"><input type="checkbox"><span class="t">設定画面2枚の<strong>スクショ</strong>済み</span></label>
+    <label class="item"><input type="checkbox"><span class="t">スライドとUI文言のズレをメモ → スライド修正<span class="sub">Claude Codeに頼めば数分</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">デモ用作業フォルダを<strong>一度きれいに戻す</strong><span class="sub">本番で最初からやって見せるため</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t">会場ネット断対策: <strong>スマホテザリング</strong>設定確認</span></label>
+    <div class="warn"><strong>つまずき想定</strong>: ログインしていない/別アカウント ・ Coworkが見当たらない(旧バージョン) ・ 急に応答しない(使用量上限→使用量画面へ) ・ 許可ダイアログで固まる(「読んでOKして大丈夫」の声かけ)</div>
+  </div>
+</section>
+
+<div id="alldone">全ステップ完了！ いってらっしゃい 🎉</div>
+</main>
+<footer>
+  <button id="reset">チェックをすべてリセット</button>
+  <span style="margin-left:12px">チェック状態はこのブラウザに自動保存されます</span>
+</footer>
+
+<script>
+  const KEY = 'otameshi-inzai-v1';
+  const boxes = [...document.querySelectorAll('input[type=checkbox]')];
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  boxes.forEach((b, i) => {
+    b.dataset.i = i;
+    if (saved[i]) b.checked = true;
+    b.addEventListener('change', update);
+  });
+  document.querySelectorAll('.step .head').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    if (!confirm('すべてのチェックをリセットしますか？')) return;
+    boxes.forEach(b => b.checked = false);
+    update();
+  });
+  function update() {
+    const state = {};
+    boxes.forEach((b, i) => { state[i] = b.checked; b.closest('label').classList.toggle('done', b.checked); });
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    const done = boxes.filter(b => b.checked).length;
+    document.getElementById('fill').style.width = (done / boxes.length * 100) + '%';
+    document.getElementById('count').textContent = `${done} / ${boxes.length} 完了`;
+    document.querySelectorAll('.step').forEach(s => {
+      const bs = [...s.querySelectorAll('input')];
+      const d = bs.filter(b => b.checked).length;
+      const stat = s.querySelector('.stat');
+      stat.textContent = `${d}/${bs.length}`;
+      stat.classList.toggle('all', d === bs.length);
+    });
+    document.getElementById('alldone').style.display = done === boxes.length ? 'block' : 'none';
+  }
+  update();
+</script>
+</body>
+</html>

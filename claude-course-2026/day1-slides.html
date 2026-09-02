@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>AIと一緒に働く — 起業家向けClaude講座 第1回</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf9f5;
+    --ink: #1d1d1f;
+    --muted: #6b6b70;
+    --accent: #d97757;   /* Claude terracotta */
+    --accent2: #0b6e99;
+    --gold: #f2b632;
+    --line: #e3e0da;
+    --code-bg: #1e1e24;
+    --code-ink: #e8e6e3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #111; }
+  body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", -apple-system, sans-serif; color: var(--ink); overflow: hidden; }
+
+  #deck { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .slide {
+    width: 1280px; height: 720px; background: var(--bg); position: absolute;
+    padding: 64px 80px; display: none; flex-direction: column; overflow: hidden;
+    transform-origin: center center;
+  }
+  .slide.active { display: flex; }
+
+  h1 { font-size: 64px; line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; }
+  h2 { font-size: 44px; line-height: 1.25; font-weight: 800; margin-bottom: 28px; }
+  h2 .tag { display: inline-block; font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: .12em; margin-bottom: 10px; }
+  h3 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  p, li { font-size: 28px; line-height: 1.55; }
+  .lead { font-size: 34px; line-height: 1.5; }
+  .small { font-size: 20px; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .accent { color: var(--accent); }
+  ul { padding-left: 1.1em; }
+  li { margin-bottom: 8px; }
+  li ul li { font-size: 24px; margin-bottom: 2px; }
+  strong { font-weight: 800; }
+
+  .cols { display: grid; gap: 40px; flex: 1; min-height: 0; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cols.tight { gap: 24px; }
+  .center { align-items: center; justify-content: center; text-align: center; }
+  .footer { position: absolute; bottom: 28px; left: 80px; right: 80px; display: flex; justify-content: space-between; font-size: 16px; color: var(--muted); }
+  .footer .num::after { content: attr(data-n); }
+
+  .card.sm li { font-size: 24px; }
+  .card.sm p { font-size: 24px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 24px 28px; }
+  .card h3 { color: var(--accent2); }
+  .card.hot { border-color: var(--accent); }
+  .card.hot h3 { color: var(--accent); }
+  .kicker { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: .1em; margin-bottom: 14px; }
+
+  pre { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px 22px; font-family: "SF Mono", Menlo, monospace; font-size: 19px; line-height: 1.45; overflow: hidden; white-space: pre-wrap; }
+  pre.sm { font-size: 16px; padding: 14px 18px; }
+  code.inline { font-family: "SF Mono", Menlo, monospace; background: #eeece7; padding: 2px 8px; border-radius: 6px; font-size: .9em; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 22px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.4; }
+  th { font-size: 18px; color: var(--muted); font-weight: 700; letter-spacing: .06em; }
+  td.hl { color: var(--accent); font-weight: 800; }
+
+  .big-num { font-size: 120px; font-weight: 900; line-height: 1; color: var(--accent); }
+  .pill { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 18px; font-weight: 700; background: #f8e3db; color: var(--accent); margin: 0 8px 8px 0; }
+  .pill.blue { background: #e2f0f8; color: var(--accent2); }
+  .pill.green { background: #e3f3e6; color: #2a7a3b; }
+  .vs { display: grid; grid-template-columns: 1fr 80px 1fr; align-items: center; gap: 16px; }
+  .vs .arrow { font-size: 48px; text-align: center; color: var(--muted); }
+  .quote { border-left: 6px solid var(--gold); padding: 8px 24px; font-size: 30px; line-height: 1.5; background: #fff8e6; border-radius: 0 12px 12px 0; }
+  .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .steps.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .steps .card { position: relative; padding-top: 40px; }
+  .steps .n { position: absolute; top: -22px; left: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+  #prog { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--accent); width: 0; z-index: 9; }
+
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    html, body { background: #fff; overflow: visible; height: auto; }
+    #deck { position: static; display: block; }
+    .slide { display: flex !important; position: relative; transform: none !important; page-break-after: always; break-after: page; }
+    #prog { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div id="deck">
+
+<!-- 1 title -->
+<section class="slide center">
+  <div class="kicker">印西市 起業家向けClaude講座 第1回</div>
+  <h1>AIと一緒に働く</h1>
+  <p class="lead muted" style="margin-top:20px">— Claude Cowork 入門 —</p>
+  <p style="margin-top:48px">2026.09.01（火） コスモスパレット<br><span class="small">山根 偉之（Code for INZAI）</span></p>
+</section>
+
+<!-- 2 行政PR -->
+<section class="slide">
+  <h2><span class="tag">なぜ印西市でClaude講座？</span><br>創業支援 × AI活用 × 地域の産業振興</h2>
+  <div class="cols cols-3 tight" style="align-items:start">
+    <div class="card sm"><h3>2026年3月</h3><p><strong>AI活用講座</strong><br>「とにかくたくさん<br>AIに触ろう」</p></div>
+    <div class="card sm hot"><h3>今回（9月）</h3><p><strong>Claude講座</strong><br>「AIと<span class="accent">一緒に</span><br><span class="accent">働こう</span>」</p></div>
+    <div class="card sm"><h3>これから</h3><p>やりたいことで起業する人が増えれば<br><strong class="accent">印西はもっと楽しくなる</strong></p></div>
+  </div>
+  <ul style="margin-top:28px">
+    <li>今日のデモは「<strong>印西でブリューパブを開くなら？</strong>」— 開業の仕方から、酒税、領収書、仕入れ、ロゴまで</li>
+    <li>開業準備の実務を、<strong class="accent">AIと一緒に進める</strong>ところをそのままお見せします</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 3 自己紹介 -->
+<section class="slide">
+  <h2><span class="tag">自己紹介</span><br>山根 偉之（やまね ひでゆき）</h2>
+  <ul style="margin-top:16px">
+    <li><strong>ソフトウェアエンジニア</strong>。AI-Nativeを目指す企業で、<strong>AIを活用した全社的な業務改善</strong>に取り組んできた</li>
+    <li>いまは、<strong class="accent">AIを活用してクラフトビール業界を盛り上げる</strong>仕事をしています</li>
+    <li>シビックテック団体 <strong class="accent">Code for INZAI</strong> — テクノロジーで地域課題を解決する活動。3月の「AI活用講座」も担当しました</li>
+  </ul>
+  <div class="quote" style="margin-top:28px">ふだんの仕事は、まさに今日お話しする「<strong>AIと一緒に働く</strong>」のど真ん中。<br>今日のデモは「<strong class="accent">もし印西でブリューパブを開くなら？</strong>」でお見せします。</div>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 4 今日のゴール -->
+<section class="slide">
+  <h2><span class="tag">今日のゴール</span><br>「一緒にやって、できた」を持って帰る</h2>
+  <div class="cols cols-2">
+    <div class="card hot">
+      <h3>第1回（今日）— 一緒に働く</h3>
+      <p><strong>Claude Cowork</strong> と、調査・文章・資料作成・整理といった日常業務を一緒に進める</p>
+    </div>
+    <div class="card">
+      <h3>第2回（9/8）— 仕組みにする</h3>
+      <p><strong>Claude Code</strong> と、Webページ・CSV処理・自動化のたたき台まで作る</p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:32px">帰るときに「<strong class="accent">これ、明日そのまま使えるじゃん</strong>」が<br>ひとつあれば、今日は大成功です。</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 5 事業マップ -->
+<section class="slide">
+  <h2><span class="tag">この部屋の事業マップ</span><br>ぜんぶ違う事業。だから面白い</h2>
+  <div style="margin-top:8px">
+    <span class="pill">教育・教室（家庭教師/プログラミング教材/金融教育/ボードゲーム/レザークラフト教室）</span>
+    <span class="pill blue">クリエイティブ（Webデザイン/写真/動画SNS/絵本ブランド/フリーペーパー）</span>
+    <span class="pill green">物販・EC（革小物/輸入販売/卸/EC開業準備）</span>
+    <span class="pill">農業・食・獣医</span>
+    <span class="pill blue">福祉・配食</span>
+    <span class="pill green">防災コンサル</span>
+  </div>
+  <ul style="margin-top:28px">
+    <li>共通点はひとつ: <strong>全員が「自分の事業」を持っている（始めようとしている）</strong></li>
+    <li>今日のハンズオンの題材は、教科書ではなく<strong class="accent">みなさんの事業</strong>です</li>
+  </ul>
+  <p class="small" style="margin-top:16px">※申込アンケートの事業内容を業種でまとめたものです</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 6 座学: 4大プレイヤー -->
+<section class="slide">
+  <h2><span class="tag">2026年のAIの現在地</span><br>覚えるのは4社だけでいい</h2>
+  <table style="margin-top:8px">
+    <tr><th>会社</th><th>サービス</th><th>ざっくり特徴</th></tr>
+    <tr><td class="hl">Anthropic</td><td><strong>Claude</strong></td><td>「仕事を任せる」方向に強い。Cowork / Claude Code。今日の主役</td></tr>
+    <tr><td>OpenAI</td><td>ChatGPT</td><td>利用者数最大。対話・調べ物の定番</td></tr>
+    <tr><td>Google</td><td>Gemini</td><td>検索・Googleサービスとの連携。NotebookLMも</td></tr>
+    <tr><td>Microsoft</td><td>Copilot</td><td>Word / Excel / Windowsに組み込み</td></tr>
+  </table>
+  <p style="margin-top:24px">性能は各社とも高い。大事なのは「どれが最強か」より<br><strong class="accent">自分の仕事の形に合うものを1つ、深く使うこと</strong></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 7 答えるAI→働くAI -->
+<section class="slide">
+  <h2><span class="tag">大きな変化</span><br>「答えるAI」から「働くAI」へ</h2>
+  <div class="vs" style="margin-top:8px">
+    <div class="card">
+      <h3>これまで — 答えるAI</h3>
+      <p>質問する → <strong>答えが返ってくる</strong><br><span class="small">調べ物・文章の相談相手。3月の講座で触ったのは主にここ</span></p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card hot">
+      <h3>いま — 働くAI</h3>
+      <p>仕事を渡す → <strong>成果物が返ってくる</strong><br><span class="small">ファイルを読み、作業し、レポートを作る</span></p>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:28px">前回の合言葉「<strong>問いを立てる能力</strong>」は、<br>働くAIの時代には<strong class="accent">もっと</strong>重要になりました。</div>
+  <p class="small" style="margin-top:14px">さらに自律的に<strong>動き続ける</strong>「AIエージェント」の世界もあります — 第2回の最後に紹介します</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 8 ツール群の関係 = MAP -->
+<section class="slide">
+  <h2><span class="tag">Claudeのツール群 — 全体地図</span><br>中身は同じ「Claude」。違うのは、何を渡して何が出てくるか</h2>
+  <table style="margin-top:0;font-size:20px;line-height:1.3">
+    <tr><th style="width:140px;padding:6px 14px"></th><th style="padding:6px 14px">チャット</th><th style="padding:6px 14px;color:var(--accent)">Cowork ← 今日</th><th style="padding:6px 14px">Claude Code ← 来週</th></tr>
+    <tr><td class="hl">一言で</td><td style="font-size:27px;font-weight:900">聞く</td><td style="font-size:27px;font-weight:900;color:var(--accent)">任せる</td><td style="font-size:27px;font-weight:900;color:#5b4bb5">仕組みにする</td></tr>
+    <tr><td class="hl">渡すもの</td><td>質問・添付（その場限り）</td><td><strong>フォルダ</strong>（中を読み・書き・保存）</td><td>フォルダ（読み・書き・<strong>実行</strong>）</td></tr>
+    <tr><td class="hl">進め方</td><td>1問1答</td><td>手順を自分で組んで進む。並行OK</td><td>プログラムを書いて動かすまで</td></tr>
+    <tr><td class="hl">出てくるもの</td><td>画面上の回答</td><td><strong>ファイル</strong>（レポート・CSV・整理済みフォルダ）</td><td><strong>動くもの</strong>（Webページ・フォーム・自動化）</td></tr>
+    <tr><td class="hl">たとえ</td><td>社員に口頭で聞く</td><td>机とファイルを渡して仕事を頼む</td><td>「次から自動で回るようにして」</td></tr>
+  </table>
+  <p style="margin-top:14px;font-size:23px">チャットは<strong>答え</strong>が返る。Coworkは<strong class="accent">成果物がフォルダに残る</strong>。CoworkとCodeは<strong>同じエンジン</strong></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 9 Coworkでできること -->
+<section class="slide">
+  <h2><span class="tag">Claude Cowork</span><br>「一人の社員」にできる仕事</h2>
+  <div class="cols cols-2 tight" style="flex:0 0 auto">
+    <div class="card sm"><h3>調査・リサーチ</h3><p>市場・競合・顧客を調べてレポート化</p></div>
+    <div class="card sm"><h3>資料・文章づくり</h3><p>チラシ、SNS投稿、事業計画のたたき台</p></div>
+    <div class="card sm"><h3>ファイルの整理・読み書き</h3><p>フォルダを読んで分類・整理・まとめ資料に</p></div>
+    <div class="card sm"><h3>定型業務</h3><p>毎回同じ手順の作業を、手順ごと任せる</p></div>
+  </div>
+  <p style="margin-top:22px;font-size:26px"><strong>タスクを丸ごと任せられて</strong>、並行で働き、<strong class="accent">ファイルという成果物</strong>が残る。<br>しかも人と違って<strong class="accent">疲れない</strong> — ただし“体力”にあたる<strong>利用枠</strong>はあります（後ほど）</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 10 参加者の声 -->
+<section class="slide center">
+  <div class="kicker">申込アンケートより</div>
+  <div class="quote" style="font-size:36px;text-align:left;max-width:1000px">
+    「Claudeを単なる文章作成ツールではなく、<br>事業を支える<strong class="accent">一人の社員</strong>のように<br>活用できる環境を作りたい」
+  </div>
+  <p class="lead" style="margin-top:40px">この講座の合言葉にさせてください。<br>今日はその<strong>第一歩</strong>です。</p>
+</section>
+
+<!-- 10.5 社員は育つ -->
+<section class="slide">
+  <h2><span class="tag">しかも</span><br>その社員は、使うほど「育つ」</h2>
+  <div class="cols cols-3 tight" style="flex:0 0 auto">
+    <div class="card sm">
+      <h3>メモリ</h3>
+      <p>Claudeが<strong>あなたを覚える</strong>。名前・事業・好みの文体。会話から自動で貯まり、「これを覚えておいて」でも指示できる</p>
+    </div>
+    <div class="card sm">
+      <h3>プロジェクト</h3>
+      <p><strong>事業・案件ごと</strong>の資料とルールの置き場。入れた資料が毎回の前提になる</p>
+    </div>
+    <div class="card sm hot">
+      <h3>作業フォルダ</h3>
+      <p>フォルダに置いたファイルは<strong>Coworkが読む</strong>。「事業について」メモを置けば毎回の引き継ぎが不要に</p>
+    </div>
+  </div>
+  <p style="margin-top:20px" class="lead">毎回ゼロから説明しなくていい —<br><strong class="accent">勤続日数が増えるほど、頼れる社員になる</strong></p>
+  <p class="small" style="margin-top:10px">人間の新人と同じで、やらせっぱなしでは育たない。「これ良かった、次もこれで」— 今日の最後にやります</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 10.8 画面ツアー -->
+<section class="slide">
+  <h2><span class="tag">画面ツアー（17分・一緒に操作）</span><br>私の画面を映します。同じ場所を自分のPCで</h2>
+  <p style="margin-top:-14px;margin-bottom:8px;font-size:19px"><a href="sanka-checklist.html" target="_blank" style="color:var(--accent2);font-weight:800;text-decoration:none">▶ ここでチェックリスト（sanka-checklist.html）を開いて、手元のClaude Desktopを操作</a></p>
+  <table style="margin-top:0;font-size:18px;line-height:1.2">
+    <tr><th style="width:50px;padding:4px 12px">#</th><th style="width:240px;padding:4px 12px">見せる画面</th><th style="padding:4px 12px">一言で</th><th style="width:320px;padding:4px 12px">みなさんがやること</th></tr>
+    <tr><td class="hl" style="padding:6px 12px">1</td><td style="padding:6px 12px">Chat / Cowork / Code</td><td style="padding:6px 12px">聞く／任せる／仕組みにする（さっきの地図）</td><td style="padding:6px 12px">Coworkを開く</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">2</td><td style="padding:6px 12px">プロジェクト作成</td><td style="padding:6px 12px">事業ごとの箱。ファイル・指示・記憶を貯める</td><td style="padding:6px 12px">自分の事業名で作る</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">3</td><td style="padding:6px 12px">Work in a folder</td><td style="padding:6px 12px">選ぶ＝その中の読み書きを許可。外は触らない</td><td style="padding:6px 12px"><code class="inline">claude-practice</code> を選ぶ</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">4</td><td style="padding:6px 12px">最初の依頼・許可ダイアログ</td><td style="padding:6px 12px">読んでからOK。止める／追加指示もここ</td><td style="padding:6px 12px">「このフォルダに何が入ってる？」</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">5</td><td style="padding:6px 12px">設定 → プライバシー</td><td style="padding:6px 12px">「モデル改善への協力」は初期値オン</td><td style="padding:6px 12px">オフにする</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">6</td><td style="padding:6px 12px">使用量・モデル選択</td><td style="padding:6px 12px">体力ゲージと頭脳のグレード。場所だけ</td><td style="padding:6px 12px">場所を見ておく</td></tr>
+    <tr><td class="hl" style="padding:6px 12px">7</td><td style="padding:6px 12px">メモリ</td><td style="padding:6px 12px">学習オフでも残る。あなたを覚える層</td><td style="padding:6px 12px">何を覚えているか眺める</td></tr>
+  </table>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 11 始め方と作法（画面ツアー: 講師の手元を映しながら、同じ操作を） -->
+<section class="slide">
+  <h2><span class="tag">画面ツアー — 一緒に開きましょう</span><br>始め方と、安全のための作法</h2>
+  <div class="cols cols-2">
+    <div>
+      <h3>始め方（プロジェクト → フォルダ）</h3>
+      <ul>
+        <li>Claude Desktopで「<strong>Cowork</strong>」を開く</li>
+        <li><strong>プロジェクトを作る</strong>（自分の事業名でOK）<br><span class="small">= 事業ごとの箱。ファイル・指示・記憶をここに貯める</span></li>
+        <li>入力欄の「<strong>Work in a folder</strong>」で作業フォルダを選ぶ<br><span class="small">選ぶ = その中の読み書きを許可。<strong>外には触れない</strong></span></li>
+        <li>「このフォルダに何が入ってる？」と聞いてみる</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:var(--accent)">作法（ここ大事）</h3>
+      <ul>
+        <li><strong>作業用フォルダを作ってから</strong>渡す（本番のファイルは触らせない）<br><span class="small">デスクトップに <code class="inline">claude-practice</code>。Windowsはデスクトップかドキュメントの下に</span></li>
+        <li>許可を求められたら<strong>読んでから</strong>OKする</li>
+        <li><strong>個人情報・機密・未公開情報は渡さない</strong><br><span class="small">内容はAnthropicのサーバーで処理されます</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 11.5 設定のお作法（触る前に整える） -->
+<section class="slide">
+  <h2><span class="tag">設定のお作法（全員でやりましょう）</span><br>触る前に、2つだけ整える</h2>
+  <div class="cols cols-2 tight" style="flex:0 0 auto">
+    <div class="card sm hot">
+      <h3>① 学習に使わせない設定</h3>
+      <p>設定 → プライバシー →<br>「<strong>モデル改善への協力</strong>」を<strong class="accent">オフ</strong></p>
+      <p class="small" style="margin-top:8px">個人プランは<strong>初期設定がオン</strong>。オフにすると会話・ファイルが学習に使われず、保存期間も短くなります</p>
+    </div>
+    <div class="card sm">
+      <h3>② 使用量の確認</h3>
+      <p>設定の「<strong>使用量</strong>」= 社員の<strong>“体力ゲージ”</strong>。どれだけ使ったか確認できる</p>
+      <p class="small" style="margin-top:8px">Proプランには数時間ごと・週ごとの上限あり。「急に使えない！」の前に見る癖を</p>
+    </div>
+  </div>
+  <p style="margin-top:18px;font-size:24px"><strong>学習オフにしても、メモリは残ります。</strong>学習 = Anthropicのモデル改善に使う設定 / メモリ = <strong class="accent">あなたのClaudeがあなたを覚える</strong>。別物です</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 11.6 モデルの使い分け -->
+<section class="slide">
+  <h2><span class="tag">設定のお作法・つづき</span><br>頭脳にもグレードがある — モデルの使い分け</h2>
+  <table style="margin-top:4px">
+    <tr><th>モデル</th><th>ざっくり</th><th>使いどころ</th></tr>
+    <tr><td>Haiku</td><td>速い・軽い</td><td>簡単な質問、下書き、ちょっとした確認</td></tr>
+    <tr><td class="hl">Sonnet</td><td>バランス型</td><td><strong>日常の主力</strong>。迷ったらこれ</td></tr>
+    <tr><td>Opus</td><td>じっくり賢い</td><td>難しい分析・長い文書</td></tr>
+    <tr><td>Fable</td><td>最上位</td><td><strong>ここぞの難問</strong>だけに</td></tr>
+  </table>
+  <ul style="margin-top:20px">
+    <li style="font-size:26px">上位モデルほど賢いが、<strong class="accent">利用枠の消費が大きい</strong>（=「急に使えない」の主因）</li>
+    <li style="font-size:26px">コツ: <strong>普段は軽く、詰まったら上げる</strong>。いまは<strong>切り替えの場所だけ</strong>覚えればOK</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 12 デモ導入 -->
+<section class="slide">
+  <h2><span class="tag">デモ①</span><br>「ブリューパブを開業したい。開業の仕方は？」</h2>
+  <p style="font-size:26px">お題: もし私が印西で<strong class="accent">ブリューパブ</strong>（店内醸造のパブ）を開業するなら？<br>いちばん素朴な問いから始めます。プロジェクト「印西ブリューパブ」で:</p>
+  <pre style="margin-top:16px">私: ブリューパブを開業したい。開業の仕方を教えて
+
+Claude: 大きく6ステップです。
+  1. 事業計画  2. 物件（用途地域の確認）
+  3. 酒類製造免許（酒税法・税務署）← ここ
+  4. 飲食店営業許可（保健所）  5. 設備  6. 資金 …
+
+私: え、酒税？ 国税庁の資料をダウンロードして
+    フォルダに入れて、要点を1枚にまとめて</pre>
+  <p style="margin-top:14px" class="lead">「知らなかった論点」が出てくる。<strong class="accent">そこから資料を取りに行かせる</strong></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 13 デモの手順 -->
+<section class="slide">
+  <h2><span class="tag">デモ①</span><br>聞く → 知らない論点が出る → 資料を取りに行かせる</h2>
+  <div class="steps" style="margin-top:24px">
+    <div class="card"><div class="n">1</div><h3>聞く</h3><p style="font-size:21px">「開業の仕方を教えて」→ 手順の中に<strong>酒類製造免許（酒税法）</strong>が出てくる</p></div>
+    <div class="card"><div class="n">2</div><h3>取りに行かせる</h3><p style="font-size:21px">「国税庁の資料をダウンロードして要点を」→ Claudeが<strong>自分のブラウザ</strong>で国税庁サイトを開き、PDFを保存</p></div>
+    <div class="card hot"><div class="n">3</div><h3>フォルダに残る</h3><p style="font-size:21px"><code class="inline">参考資料/</code> に手引きPDF、<code class="inline">酒税_要点.md</code> に要点（免許の種類・数量条件・申請先・期間）</p></div>
+  </div>
+  <ul style="margin-top:22px">
+    <li style="font-size:24px">見どころ①: <strong>知らなかった論点</strong>が出てくる ②: 資料を<strong>自分で探して取ってくる</strong> ③: 資料と要点が<strong>ファイルで残る</strong>（チャットとの違い）</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14 デモまとめ -->
+<section class="slide">
+  <h2><span class="tag">デモから持ち帰ること</span><br>作業はAIと一緒に。知識も一緒に学べる</h2>
+  <ul style="margin-top:16px">
+    <li>酒税・許認可・用途地域…… 知らない分野も、AIが<strong>資料ごと持ってきて説明してくれる</strong></li>
+    <li>「いま何をしたの？」と聞けば説明してくれる — <strong class="accent">分野の知識はAIと一緒に学べる</strong></li>
+    <li>AIにも<strong>限界と間違い</strong>がある。<strong>数字と条文は必ず原本で確認</strong>。だからこそ、分かって使う人ほど強い</li>
+    <li>大事なのは「<strong class="accent">何を知りたいか</strong>」— 問いの質が成果物の質。「じゃあ<strong>子ども向け教室</strong>なら？<strong>配食サービス</strong>なら？」と、みなさんの事業の視点に切り替えて深められる</li>
+  </ul>
+  <div class="quote" style="margin-top:24px"><strong>問いを立てて、足りないデータを取りに行く。</strong><br>それが起業家の仕事で、<strong class="accent">作業はAIがやる</strong>。</div>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14.5 デモ② 領収書 -->
+<section class="slide">
+  <h2><span class="tag">デモ②</span><br>領収書の山を、その場で経費台帳に</h2>
+  <div class="steps" style="margin-top:24px">
+    <div class="card"><div class="n">1</div><h3>素材</h3><p style="font-size:22px">開業準備で買った備品の<strong>領収書写真</strong>のフォルダ（ごちゃごちゃのまま）</p></div>
+    <div class="card"><div class="n">2</div><h3>お願い</h3><p style="font-size:22px">「日付・店名・金額を読み取って、コピーをリネームして<strong>経費台帳CSV</strong>にして」</p></div>
+    <div class="card"><div class="n">3</div><h3>成果物</h3><p style="font-size:22px">整理されたファイル名 + 経費台帳</p></div>
+  </div>
+  <ul style="margin-top:24px">
+    <li style="font-size:24px"><strong>画像の中の文字も読める</strong>。ファイル名も変えられる — 事務作業ごと一緒にやれる</li>
+    <li style="font-size:24px">※原本（元ファイル）は消さず残す（電子帳簿保存法）。数字は必ず確認</li>
+    <li style="font-size:24px">来週予告: これを「<strong class="accent">フォルダに入れるだけで自動で回る仕組み</strong>」にします</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14.6 デモ③ ブラウザ -->
+<section class="slide">
+  <h2><span class="tag">デモ③（ちょい見せ）</span><br>ブラウザの中でも一緒に働ける</h2>
+  <div class="cols cols-2 tight" style="flex:0 0 auto">
+    <div class="card sm">
+      <h3>何が特別？</h3>
+      <ul>
+        <li>開いている画面を<strong>見て理解し、クリック・入力</strong>までやる</li>
+        <li><strong class="accent">ログインが必要なサイト</strong>の中で働ける — 仕入れ先も、カレンダーも、メールも</li>
+        <li>APIも、プログラムも要らない。<strong>人と同じ画面</strong>を使う</li>
+      </ul>
+    </div>
+    <div class="card sm hot">
+      <h3>ちょい見せデモ</h3>
+      <p>仕入れを検討する人として: 「<strong>卸サイト</strong>でIPAとラガーを2〜3銘柄ずつ、価格・容量・産地で<strong>比較表</strong>にして保存して」<br><span class="small">時間があれば: 開業TODO → Googleカレンダーに仮押さえ + 見積もり依頼メールをGmailに下書き</span></p>
+    </div>
+  </div>
+  <p style="margin-top:18px;font-size:24px"><strong>ログインは人間、操作はAI</strong>。Coworkの<strong>内蔵ブラウザ</strong>（入れるものなし）か、自分のChromeの中で働かせる<strong>Chrome拡張</strong>。<br><span class="small">購入・恒久削除は仕組み上できない。それでも送信・支払いは必ず自分の指で。今日は「比較表と下書きまで」</span></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14.65 デモ④ Design ロゴ -->
+<section class="slide">
+  <h2><span class="tag">デモ④（1分）</span><br>ロゴも作れる — Claude Design</h2>
+  <div class="steps" style="margin-top:24px">
+    <div class="card"><div class="n">1</div><h3>頼む</h3><p style="font-size:21px">「印西のブリューパブのロゴ。木樽とビールの<strong>あたたかい色</strong>で、3案」</p></div>
+    <div class="card"><div class="n">2</div><h3>直す</h3><p style="font-size:21px">気になる所を<strong>クリックして一言</strong>（「この文字を太く」）。ドラッグで動かすのも手で</p></div>
+    <div class="card hot"><div class="n">3</div><h3>出す</h3><p style="font-size:21px">PDF / 画像 / 来週の<strong>Claude Codeへ手渡し</strong></p></div>
+  </div>
+  <p class="lead" style="margin-top:28px"><strong>叩き台はAI、こだわりを入れるのが人。</strong><br><span style="font-size:24px">チラシ・ポートフォリオ・スライドも同じ。クリエイティブ系の方はここから</span></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14.7 Webとは（お店のたとえ） -->
+<section class="slide">
+  <h2><span class="tag">ちょっとだけ仕組みの話</span><br>Webのしくみ — お店にたとえると</h2>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0">
+    <svg viewBox="0 0 1000 330" style="width:100%;max-height:100%" font-family="Hiragino Sans, sans-serif">
+      <!-- shop -->
+      <rect x="600" y="30" width="340" height="270" rx="18" fill="#fff" stroke="#e3e0da" stroke-width="2.5"/>
+      <text x="770" y="70" text-anchor="middle" font-size="25" font-weight="800" fill="#1d1d1f">Webサービス（お店）</text>
+      <text x="770" y="98" text-anchor="middle" font-size="17" fill="#6b6b70">カレンダー / 地図 / 請求書サービス…</text>
+      <!-- doors -->
+      <rect x="545" y="120" width="150" height="56" rx="12" fill="#fdf1ec" stroke="#d97757" stroke-width="2.5"/>
+      <text x="620" y="145" text-anchor="middle" font-size="21" font-weight="800" fill="#d97757">店頭</text>
+      <text x="620" y="167" text-anchor="middle" font-size="15" fill="#b05c3f">画面とボタン</text>
+      <rect x="545" y="220" width="150" height="56" rx="12" fill="#e2f0f8" stroke="#0b6e99" stroke-width="2.5"/>
+      <text x="620" y="245" text-anchor="middle" font-size="21" font-weight="800" fill="#0b6e99">勝手口 = API</text>
+      <text x="620" y="267" text-anchor="middle" font-size="15" fill="#0b6e99">機械どうしの窓口</text>
+      <!-- left actors -->
+      <rect x="60" y="112" width="240" height="72" rx="14" fill="#fff" stroke="#e3e0da" stroke-width="2"/>
+      <text x="180" y="142" text-anchor="middle" font-size="22" font-weight="800" fill="#1d1d1f">あなた（人間）</text>
+      <text x="180" y="168" text-anchor="middle" font-size="16" fill="#6b6b70">ブラウザ・スマホで見る</text>
+      <rect x="60" y="212" width="240" height="72" rx="14" fill="#fff" stroke="#e3e0da" stroke-width="2"/>
+      <text x="180" y="242" text-anchor="middle" font-size="22" font-weight="800" fill="#1d1d1f">アプリ・AI</text>
+      <text x="180" y="268" text-anchor="middle" font-size="16" fill="#6b6b70">画面なしで直接やり取り</text>
+      <!-- arrows -->
+      <g stroke="#c9c5bd" stroke-width="3" fill="none">
+        <line x1="300" y1="148" x2="535" y2="148"/>
+        <line x1="300" y1="248" x2="535" y2="248"/>
+      </g>
+      <polygon points="535,148 520,141 520,155" fill="#c9c5bd"/>
+      <polygon points="535,248 520,241 520,255" fill="#c9c5bd"/>
+    </svg>
+  </div>
+  <ul style="margin-top:8px">
+    <li style="font-size:25px">天気アプリも決済も、裏では<strong>勝手口（API）</strong>で注文と受け取りだけしている</li>
+    <li style="font-size:25px"><strong>MCP</strong> = AI向けに揃えた<strong class="accent">共通の勝手口の規格</strong>。どのお店にも同じ作法で入れる</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 14.8 AIはどこまで行くか -->
+<section class="slide">
+  <h2><span class="tag">概念だけ先取り</span><br>AIはこの先、どこまで行く？</h2>
+  <div class="steps four" style="margin-top:24px">
+    <div class="card hot"><div class="n">1</div><h3 style="font-size:22px">店頭を押すAI</h3><p style="font-size:18px">これまで<strong>人→店頭</strong>、<strong>機械→勝手口</strong>だった。さっきのブラウザは<strong class="accent">機械が店頭を使う</strong>。勝手口のない店でも働ける</p></div>
+    <div class="card"><div class="n">2</div><h3 style="font-size:22px">勝手口でつながるAI</h3><p style="font-size:18px"><strong>API / MCP</strong>で直接。請求書発行・予約・集計が<strong>自動</strong>で回る</p></div>
+    <div class="card"><div class="n">3</div><h3 style="font-size:22px">自律的に回るエージェント</h3><p style="font-size:18px">目的を渡すと、<strong>複数のお店を自分で回り</strong>、情報をつないで動き続ける</p></div>
+    <div class="card"><div class="n">4</div><h3 style="font-size:22px">エージェントの群れ</h3><p style="font-size:18px">最先端では<strong>数百〜数千のAI</strong>が協力して働き始めている</p></div>
+  </div>
+  <p style="margin-top:20px;font-size:27px;line-height:1.45">①が画期的: <strong class="accent">機械が人間のUIを使えるようになった</strong>（RPAと違い、手順を書かなくていい）<br><span style="font-size:22px;color:var(--muted)">ぜんぶ、今日の「一緒に働く」の延長線上。②の「繋ぐ」は来週実際にお見せします</span></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 15 ハンズオン約束 -->
+<section class="slide">
+  <h2><span class="tag">ハンズオン（33分）</span><br>はじめる前の約束ごと</h2>
+  <ul style="margin-top:8px">
+    <li style="font-size:25px">プロジェクトを作り、<code class="inline">claude-practice</code> を<strong>作業フォルダ</strong>に（画面ツアーで作ったもの）</li>
+    <li style="font-size:25px">最初の3分で、Claudeと一緒に<strong>「事業について.md」</strong>を作る<span class="small">（社員への引き継ぎ書）</span></li>
+    <li style="font-size:25px">渡すのは<strong>コピー・テスト用ファイル</strong>だけ。<strong>個人情報・機密情報は使わない</strong><span class="small">（実データの扱いはこのあと）</span></li>
+    <li style="font-size:25px">待ち時間は<strong>放置でOK</strong>。詰まったら<strong>手を挙げる</strong></li>
+  </ul>
+  <p class="lead" style="margin-top:18px">今日のうちに、<strong class="accent">明日使えるものを1つ</strong>。<br><span style="font-size:24px">チラシ案でも、調査レポートでも、整理されたフォルダでも</span></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 16 メニュー -->
+<section class="slide">
+  <h2><span class="tag">ハンズオンメニュー</span><br>自分の事業を題材に、1コース選ぶ</h2>
+  <div class="cols cols-3 tight">
+    <div class="card sm">
+      <h3>① 調べる</h3>
+      <p><strong>市場・競合・お客さん調査</strong>を任せてレポートに<br><span class="small">例:「印西市で子ども向け教室の競合と料金相場を調べて表に」</span></p>
+    </div>
+    <div class="card sm">
+      <h3>② 作る</h3>
+      <p><strong>チラシ文面 / SNS投稿1ヶ月分 / 事業計画のたたき台 / プロフィール</strong><br><span class="small">例:「この事業説明から、開業案内チラシの文面を3案」</span></p>
+    </div>
+    <div class="card sm">
+      <h3>③ 整える</h3>
+      <p><strong>フォルダを渡して整理・分析</strong><br><span class="small">例: 領収書写真を読み取ってリネーム+経費台帳に / オープンデータで自分の商圏を分析</span></p>
+    </div>
+  </div>
+  <p style="margin-top:24px" class="small">迷ったら①調べるコースから。データは配布のUSB / QRからどうぞ</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 17 プロンプトの型 -->
+<section class="slide">
+  <h2><span class="tag">お願いのコツ</span><br>「背景 + 目的 + 成果物の形」で頼む</h2>
+  <pre style="margin-top:8px">私は印西市で【ブリューパブ】（店内でビールを
+醸造して出すパブ）の開業を準備しています。                ← 背景
+
+オープン告知のチラシを作りたいので、                  ← 目的
+地元の人に刺さるキャッチコピーと本文を3案、
+比較できるように1つのファイルにまとめてください。          ← 成果物の形</pre>
+  <ul style="margin-top:24px">
+    <li>社員に仕事を頼むのと同じ。<strong>背景を伝えるほど良い仕事</strong>をします</li>
+    <li>出てきたものの<strong>違和感をそのまま言う</strong>（「うちの客層は違う」「もっと短く」「ここは譲れない」）— 何度でも直します</li>
+    <li>注文を足すほど<strong class="accent">あなただけのアウトプット</strong>になる。その<strong>こだわり</strong>が商売の価値そのもの</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 18 ハンズオン中掲示 -->
+<section class="slide">
+  <h2><span class="tag">ハンズオン中</span><br>① 調べる / ② 作る / ③ 整える</h2>
+  <div class="cols cols-2">
+    <div>
+      <h3>頼み方の型</h3>
+      <pre class="sm">背景: 私は◯◯という事業を(準備)しています
+目的: ◯◯したい
+成果物: ◯◯を、◯◯の形式でまとめて</pre>
+      <h3 style="margin-top:20px">うまくいったら</h3>
+      <ul><li style="font-size:24px">追い質問で深掘り</li><li style="font-size:24px">「もっと◯◯に」と修正依頼</li></ul>
+    </div>
+    <div>
+      <h3 style="color:var(--accent)">約束</h3>
+      <ul>
+        <li style="font-size:24px">作業用フォルダで</li>
+        <li style="font-size:24px">個人情報・機密は使わない</li>
+        <li style="font-size:24px">詰まったら手を挙げる</li>
+      </ul>
+      <p class="lead" style="margin-top:24px"><strong class="accent">明日使えるもの1つ</strong></p>
+    </div>
+  </div>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 18.5 お題カタログ -->
+<section class="slide">
+  <h2><span class="tag">お題カタログ</span><br>迷ったらここから。でも、ここで終わらない</h2>
+  <table style="font-size:19px;margin-top:0;line-height:1.3">
+    <tr><th style="width:190px;padding:6px 14px">業種</th><th style="padding:6px 14px">お題（コピペOK）</th></tr>
+    <tr><td class="hl">教育・教室</td><td>「印西市で子ども向け教室の競合と料金相場を調べて比較表に」</td></tr>
+    <tr><td class="hl">Web・デザイン</td><td>「クライアントに送る制作ヒアリングシートのたたき台を作って」</td></tr>
+    <tr><td class="hl">写真・映像</td><td>「この写真フォルダを撮影日でリネームして、納品リストも作って」</td></tr>
+    <tr><td class="hl">SNS・発信</td><td>「事業について.mdを読んで、Instagram投稿1ヶ月分の下書きを」</td></tr>
+    <tr><td class="hl">物販・EC</td><td>「この商品説明を、EC向けに3つのトーンで書き分けて」</td></tr>
+    <tr><td class="hl">農業・食</td><td>「うちの作物の販路と、使えそうな補助金を調べてまとめて」</td></tr>
+    <tr><td class="hl">福祉・配食</td><td>「週間の献立表フォーマットと、利用者向け案内文を作って」</td></tr>
+    <tr><td class="hl">起業準備中</td><td>「この事業アイデアを壁打ちして、事業計画のたたき台に」</td></tr>
+  </table>
+  <p class="small" style="margin-top:8px">カタログは誰が貼っても同じ答え。<strong>「うちは違う」「ここは譲れない」を足すほど、あなただけのアウトプット</strong>になります</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 19 共有 -->
+<section class="slide center">
+  <div class="kicker">共有タイム</div>
+  <h1 style="font-size:56px">何ができましたか？</h1>
+  <p class="lead muted" style="margin-top:28px">2〜3人の方に、画面を見せながら教えてください。<br>「うまくいかなかった」も立派な共有です。</p>
+</section>
+
+<!-- 19.3 振り返り: 覚えさせて帰る -->
+<section class="slide">
+  <h2><span class="tag">振り返り（2分・全員で）</span><br>今日うまくいったことを、社員に覚えさせて帰る</h2>
+  <p style="font-size:26px">ハンズオンの<strong>同じ画面で</strong>、そのまま続けて一言:</p>
+  <div class="quote" style="margin-top:14px;font-size:32px">「今日やったことで、<strong>うまくいったやり方を覚えておいて</strong>。<br>次からはそのやり方でお願い」</div>
+  <ul style="margin-top:20px">
+    <li style="font-size:25px">合わなかったことも: 「<strong>○○のやり方は合わなかった。次はしないで</strong>」</li>
+    <li style="font-size:25px">引き継ぎ書も更新: 「今日分かった私の好みを、<strong>事業について.md</strong>に追記して」</li>
+    <li style="font-size:25px">人間の新人と同じ。「これ良かった、次もこれで」の一言で、<strong class="accent">次に開いたときの社員は今日より一段賢い</strong></li>
+    <li style="font-size:25px"><strong>育て方にもコツがある</strong>: 具体的に言う（「良かった」より「結論を先に・見出し3つ、が良かった」）／ 好みは<strong>メモリ</strong>・事業の前提は<strong>事業について.md</strong>・手順は<strong>スキル</strong>／ たまにメモリを見て古いものを消す — コツ自体が上達します</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 19.6 実データの扱い -->
+<section class="slide">
+  <h2><span class="tag">実データとの共同作業</span><br>顧客名簿も、段階を踏めば扱える</h2>
+  <div class="steps" style="margin-top:24px">
+    <div class="card"><div class="n">1</div><h3>学習オフを確認</h3><p style="font-size:22px">さっきの設定。ここまでやってから</p></div>
+    <div class="card"><div class="n">2</div><h3>渡す前に最小化</h3><p style="font-size:22px">「氏名・電話・住所の列を<strong>消したコピー</strong>を作って」とClaudeに頼む → そのコピーを分析</p></div>
+    <div class="card"><div class="n">3</div><h3>本格運用なら</h3><p style="font-size:22px">Team / API プランは<strong>最初から学習対象外</strong>。事業が育ったらの選択肢</p></div>
+  </div>
+  <ul style="margin-top:26px">
+    <li style="font-size:24px">列を消す作業自体がClaudeとの共同作業 — <strong>安全化も一緒にやる</strong></li>
+    <li style="font-size:24px">法律上も段階がある: 病歴・信条などの<strong>要配慮個人情報</strong>は本人同意が原則（個人情報保護法）、<strong>マイナンバー</strong>は法定事務以外で使えない（番号法）</li>
+    <li style="font-size:24px">→ この2つは<strong class="accent">AIに入れない</strong>。通常の個人情報は「学習オフ+最小化」で</li>
+  </ul>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 20 注意点 -->
+<section class="slide">
+  <h2><span class="tag">付き合う上での注意点</span><br>5つだけ覚えて帰ってください</h2>
+  <table style="margin-top:4px">
+    <tr><td class="hl">個人情報</td><td>学習オフ+「列を消したコピー」の2段構えで。要配慮情報はNG</td></tr>
+    <tr><td class="hl">機密情報</td><td>未公開の企画・契約は慎重に（社外のサーバーで処理される）</td></tr>
+    <tr><td class="hl">著作権</td><td>生成物が他者の著作物に似ていないか、公開前に確認</td></tr>
+    <tr><td class="hl">間違える</td><td>もっともらしい嘘（ハルシネーション）がある。<strong>数字と固有名詞は必ず確認</strong></td></tr>
+    <tr><td class="hl">使いすぎ</td><td>プランには利用上限がある。AI疲れにも注意、休むのも仕事のうち</td></tr>
+  </table>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 21 付き合い方 -->
+<section class="slide center">
+  <div class="kicker">上手な付き合い方</div>
+  <p class="lead" style="max-width:1000px">AIに<strong class="accent">依頼し</strong>、自分で<strong class="accent">確認し</strong>、<br>必要なら<strong class="accent">専門家につなぐ</strong>。</p>
+  <p class="muted" style="margin-top:32px">全部信じない。全部任せきりにしない。<br>でも、たくさん触って、たくさん任せてみる。</p>
+</section>
+
+<!-- 21.5 今日の成果を1枚に -->
+<section class="slide">
+  <h2><span class="tag">今日の成果を1枚に</span><br>「開業計画」— ブリューパブの場合</h2>
+  <div class="cols cols-2 tight" style="flex:0 0 auto">
+    <div class="card sm hot">
+      <h3>今日できたもの</h3>
+      <ul>
+        <li>開業手順と酒税の要点（国税庁の資料から）</li>
+        <li>経費台帳（領収書から）</li>
+        <li>仕入れ候補の比較表（卸サイトから）</li>
+        <li>ロゴ案（Design）</li>
+      </ul>
+    </div>
+    <div class="card sm">
+      <h3>1枚にまとめる</h3>
+      <p>「今日の成果を、<strong>開業計画1枚（Artifact）</strong>にまとめて」<br><span class="small">ロゴ・コンセプト・立地・仕入れ・次にやること。見せられる形になる</span></p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:22px">みなさんも: 「<strong>今日の成果を1枚にまとめて</strong>」で持ち帰ってください。<br><span style="font-size:24px">来週、<strong class="accent">この1枚を元に、動くもの（Product）</strong>を作ります</span></p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 22 来週予告 -->
+<section class="slide">
+  <h2><span class="tag">来週予告（9/8）</span><br>Claude Code — 「1枚」を「動くもの」に</h2>
+  <div class="cols cols-2">
+    <div class="card sm">
+      <h3>今日のCowork</h3>
+      <p>調査・文章・資料・整理 → <strong>開業計画1枚</strong><br><span class="small">日常業務を任せる</span></p>
+    </div>
+    <div class="card sm hot">
+      <h3>来週のClaude Code</h3>
+      <ul>
+        <li>1枚を渡して、お店の<strong>LP+予約フォーム</strong>を作って<strong>公開</strong></li>
+        <li>今日の<strong>領収書整理</strong>を、自動で回る仕組みに</li>
+        <li>うまくいった手順を<strong>スキル</strong>に</li>
+        <li><strong>エラー・分からない画面</strong>の読み解き</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:24px">コードは書けなくて大丈夫。<strong>書くのはClaude</strong>、あなたは依頼と確認</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 23 チラ見せ -->
+<section class="slide center">
+  <div class="kicker">Claude Code チラ見せデモ</div>
+  <h1 style="font-size:52px">実はこのスライド、<br>Claude Codeで作りました</h1>
+  <p class="lead muted" style="margin-top:28px">いまこの場で、1枚直してもらいます。</p>
+</section>
+
+<!-- 24 宿題 -->
+<section class="slide">
+  <h2><span class="tag">宿題（来週まで）</span><br>3つ。ぜんぶ15分でできます</h2>
+  <div class="steps" style="margin-top:32px">
+    <div class="card"><div class="n">1</div><h3>Coworkに任せる</h3><p class="sm">今日の続きでOK。自分の業務を<strong>1つ</strong>任せて、成果を<strong>1枚</strong>にまとめておく</p></div>
+    <div class="card"><div class="n">2</div><h3>Claude Codeを起動</h3><p class="sm">配布資料の手順でインストール→起動まで（触らなくてOK）</p></div>
+    <div class="card"><div class="n">3</div><h3>業務を1つ決める</h3><p class="sm">「毎回やっていて面倒な作業」を1つ持ってくる → 来週の題材に</p></div>
+  </div>
+  <p style="margin-top:36px" class="small">※来週データを持ってくる方は、今日の「設定のお作法」+「列を消したコピー」を済ませたものを / 充電器も忘れずに</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 24.5 持ち帰り3つ -->
+<section class="slide">
+  <h2><span class="tag">今日の持ち帰り</span><br>人間の側に残る仕事は、この3つ</h2>
+  <div class="steps" style="margin-top:28px">
+    <div class="card"><div class="n">1</div><h3>問う</h3><p style="font-size:22px"><strong>問いを立てて、足りないデータを取りに行く。</strong>それが起業家の仕事で、作業はAIがやる</p></div>
+    <div class="card"><div class="n">2</div><h3>こだわる</h3><p style="font-size:22px"><strong>迷ったらカタログから。でも、こだわりを足す。</strong>それがあなただけのアウトプットになる</p></div>
+    <div class="card hot"><div class="n">3</div><h3>育てる</h3><p style="font-size:22px"><strong>うまくいったら、覚えさせて帰る。</strong>あなたの社員は、使うほど育つ</p></div>
+  </div>
+  <p class="lead" style="margin-top:32px">道具は変わっても、この3つは変わりません。</p>
+  <div class="footer"><span>起業家向けClaude講座 第1回 — 印西市</span><span class="num"></span></div>
+</section>
+
+<!-- 25 クロージング -->
+<section class="slide center">
+  <p class="lead muted">Claudeと一緒に働いて</p>
+  <h1 style="margin-top:8px">印西で、<span class="accent">おもしろいこと</span>を<br>やっていきましょう！</h1>
+  <p class="lead" style="margin-top:36px">今日つくったものが、その最初の一歩です。</p>
+</section>
+
+<!-- 26 end -->
+<section class="slide center">
+  <h1 style="font-size:56px">ありがとうございました</h1>
+  <p class="lead muted" style="margin-top:28px">第2回は <strong>9/8（火）18:30</strong> 同じ会場で。<br>宿題の「面倒な業務」を持ってきてください。</p>
+  <p class="small" style="margin-top:32px">山根 偉之 / Code for INZAI</p>
+</section>
+
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let i = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1) || '1', 10) - 1));
+  slides.forEach((s, n) => { const el = s.querySelector('.num'); if (el) el.dataset.n = `${n + 1} / ${slides.length}`; });
+  function fit() {
+    const sc = Math.min(innerWidth / 1280, innerHeight / 720);
+    slides.forEach(s => s.style.transform = `scale(${sc})`);
+  }
+  function show() {
+    slides.forEach((s, n) => s.classList.toggle('active', n === i));
+    location.hash = i + 1;
+    document.getElementById('prog').style.width = ((i + 1) / slides.length * 100) + '%';
+  }
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', ' ', 'PageDown', 'Enter'].includes(e.key)) { i = Math.min(slides.length - 1, i + 1); show(); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { i = Math.max(0, i - 1); show(); }
+    if (e.key === 'Home') { i = 0; show(); }
+    if (e.key === 'End') { i = slides.length - 1; show(); }
+  });
+  addEventListener('click', e => { if (e.clientX > innerWidth / 2) i = Math.min(slides.length - 1, i + 1); else i = Math.max(0, i - 1); show(); });
+  addEventListener('resize', fit);
+  fit(); show();
+</script>
+</body>
+</html>

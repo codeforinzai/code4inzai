@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Claude Desktop 画面ツアー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf9f5; --ink: #1d1d1f; --muted: #6b6b70;
+    --accent: #d97757; --accent2: #0b6e99; --gold: #f2b632;
+    --line: #e3e0da; --done: #2a7a3b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.65; padding-bottom: 80px; }
+  header { position: sticky; top: 0; background: rgba(250,249,245,.95); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); padding: 14px 24px; z-index: 10; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header .sub { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 8px; }
+  #bar { height: 8px; background: #eeece7; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  #fill { height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width .25s; }
+  #count { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px; }
+  .step { background: #fff; border: 1px solid var(--line); border-radius: 16px; margin-bottom: 22px; overflow: hidden; }
+  .step > .head { padding: 16px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; cursor: pointer; }
+  .step > .head:hover { background: #fdf8f5; }
+  .step .no { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: .08em; white-space: nowrap; }
+  .step .no .min { color: var(--muted); font-weight: 600; margin-left: 6px; }
+  .step h2 { font-size: 21px; font-weight: 800; flex: 1; }
+  .step .stat { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .step .stat.all { color: var(--done); font-weight: 700; }
+  .step .body { padding: 8px 22px 18px; }
+  .step.collapsed .body { display: none; }
+  .note { font-size: 15px; color: var(--muted); margin: 10px 0 6px; }
+  label.item { display: grid; grid-template-columns: 24px 1fr 1.1fr; gap: 14px; align-items: flex-start; padding: 11px 8px; border-radius: 10px; cursor: pointer; border-bottom: 1px dashed #f0ede6; }
+  label.item.simple { grid-template-columns: 24px 1fr; }
+  label.item:hover { background: #f7f4ee; }
+  label.item input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); }
+  label.item .t { font-size: 17px; }
+  label.item .t .screen { display: block; font-size: 12.5px; font-weight: 700; color: var(--accent2); letter-spacing: .04em; margin-bottom: 1px; }
+  label.item .t .sub { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
+  label.item .do { font-size: 16px; padding-left: 12px; border-left: 3px solid #f2e6df; }
+  label.item .do::before { content: "参加者: "; font-size: 12px; font-weight: 800; color: var(--accent); }
+  label.item.done .t, label.item.done .do { color: var(--muted); text-decoration: line-through; text-decoration-color: #c9c5bd; }
+  .t strong, .do strong { font-weight: 800; }
+  .quote { border-left: 5px solid var(--gold); background: #fff8e6; padding: 10px 18px; border-radius: 0 10px 10px 0; font-size: 15.5px; margin: 10px 0; }
+  .warn { border-left: 5px solid var(--accent); background: #fdf1ec; padding: 10px 18px; border-radius: 0 10px 10px 0; font-size: 15.5px; margin: 10px 0; }
+  table.cmp { width: 100%; border-collapse: collapse; margin: 12px 0 6px; font-size: 15px; }
+  table.cmp th, table.cmp td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+  table.cmp th { background: #f5f2ec; font-weight: 800; }
+  table.cmp td:first-child { font-weight: 700; color: var(--muted); white-space: nowrap; background: #fcfbf8; }
+  table.cmp .big { font-size: 20px; font-weight: 900; color: var(--accent); }
+  table.cmp .c2 .big { color: var(--accent2); }
+  table.cmp .c3 .big { color: #5b4bb5; }
+  table.small { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-top: 8px; }
+  table.small th, table.small td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+  table.small th { background: #f5f2ec; }
+  code { font-family: "SF Mono", Menlo, monospace; background: #eeece7; padding: 1px 7px; border-radius: 6px; font-size: .9em; }
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+  .three div { background: #fff8e6; border: 1px solid #f2e2b8; border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+  .three div b { display: block; font-size: 17px; margin-bottom: 4px; color: var(--accent); }
+  footer { max-width: 1000px; margin: 0 auto; padding: 0 24px; font-size: 13px; color: var(--muted); display: flex; gap: 14px; align-items: center; }
+  #reset { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  #reset:hover { border-color: var(--accent); color: var(--accent); }
+  #alldone { display: none; text-align: center; font-size: 22px; font-weight: 800; color: var(--accent); padding: 24px; }
+  @media (max-width: 720px) { label.item { grid-template-columns: 24px 1fr; } label.item .do { grid-column: 2; border-left: none; padding-left: 0; } .three { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Claude Desktop 画面ツアー <span class="sub">第1回・講師の手元を映しながら、同じ操作をなぞる</span></h1>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="count"></div>
+</header>
+<main id="course">
+
+<section class="step" data-step="0">
+  <div class="head"><span class="no">MAP</span><h2>全体地図: チャット / Cowork / Claude Code は何が違う？</h2><span class="stat"></span></div>
+  <div class="body">
+    <p class="note">3つとも中身は同じ Claude。違うのは「どこで・何を渡して・何が出てくるか」。</p>
+    <table class="cmp">
+      <tr><th></th><th class="c1">チャット</th><th class="c2">Cowork</th><th class="c3">Claude Code</th></tr>
+      <tr><td>一言で</td><td class="c1"><span class="big">聞く</span></td><td class="c2"><span class="big">任せる</span></td><td class="c3"><span class="big">仕組みにする</span></td></tr>
+      <tr><td>何をする</td><td>質問に答える・文章を作る</td><td>フォルダを渡して、仕事をまるごと頼む</td><td>プログラムを書いて動かす・公開する</td></tr>
+      <tr><td>入口</td><td>Claude Desktop / Web / スマホ</td><td>Claude Desktop の Cowork</td><td>ターミナル（黒い画面）※第2回</td></tr>
+      <tr><td>ファイル</td><td>添付して読ませる（その場限り）</td><td><strong>フォルダの中を読み、書き、保存する</strong></td><td>フォルダの中を読み、書き、<strong>実行する</strong></td></tr>
+      <tr><td>進め方</td><td>1問1答</td><td>手順を自分で組み、途中で確認しながら進む。複数並行OK</td><td>同上＋プログラムを書いて実行まで</td></tr>
+      <tr><td>出てくるもの</td><td>画面上の回答</td><td><strong>ファイル</strong>（レポート・CSV・整理済みフォルダ）</td><td><strong>動くもの</strong>（スクリプト・Webページ・フォーム）</td></tr>
+      <tr><td>向く仕事</td><td>相談・下書き・調べ物</td><td>調査レポート・書類整理・データ集計・写真仕分け</td><td>定例業務の自動化・LP公開・台帳の自動生成</td></tr>
+      <tr><td>育つ層</td><td>メモリ</td><td>メモリ＋プロジェクト＋<strong>作業フォルダ（事業について.md）</strong></td><td>同左＋CLAUDE.md</td></tr>
+    </table>
+    <div class="quote"><strong>チャットと Cowork の違いは？</strong> — チャットは「答え」が返ってくる。Cowork は「成果物」がフォルダに残る。チャットに「この10枚のチラシを整理して」と言っても手が出ないが、Cowork はフォルダを渡せば実際にファイルを動かす。<strong>社員に口頭で聞くのがチャット、机とファイルを渡して仕事を頼むのが Cowork。</strong></div>
+    <div class="quote"><strong>Cowork と Claude Code の違いは？</strong> — 同じエンジン。Cowork は「今回の仕事」をやってくれる。Claude Code は「次から自動で回る仕組み」まで作る。第2回でやります。</div>
+    <label class="item simple"><input type="checkbox"><span class="t">この表を見せてから、画面に入る</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="1">
+  <div class="head"><span class="no">STEP 1<span class="min">5分</span></span><h2>準備</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: アプリのバージョン</span>古いと Cowork の画面が違う</span><span class="do">Claude Desktop を<strong>最新版</strong>に</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: ログイン</span>アカウントが複数ある人は要注意</span><span class="do">ログインできているか確認</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: デスクトップ</span><strong>練習用フォルダ＝Claude に渡す机</strong><span class="sub">Windows はデスクトップかドキュメントの下に（他の場所は選べないことがある）</span></span><span class="do">デスクトップに <code>claude-practice</code> フォルダを作る</span></label>
+    <label class="item"><input type="checkbox"><span class="t">本番ファイルは入れない</span><span class="do">練習用のコピーだけ入れる、と決める</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="2">
+  <div class="head"><span class="no">STEP 2<span class="min">5分</span></span><h2>チャット ＝ 聞く</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 新規チャット</span>日本語で普通に頼むだけ</span><span class="do">自分の事業のことを一つ質問<span class="sub">例:「○○業で開業準備中。今月やることを整理して」</span></span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: モデル選択メニュー</span><strong>普段は軽く、詰まったら上げる</strong><span class="sub">上ほど賢いが枠を早く使う。「急に使えない」の主因</span></span><span class="do">メニューの場所を見つける（今は場所だけ）</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 添付ボタン</span>画像・PDF をその場で読む</span><span class="do">写真を1枚添付して「これは何？」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: スクショ貼り付け</span><strong>困ったら画面を見せて聞く</strong><span class="sub">困りごとコースの基本動作</span></span><span class="do">分からない画面のスクショを貼って「これどういう意味？」</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="3">
+  <div class="head"><span class="no">STEP 3<span class="min">10分</span></span><h2>Cowork ＝ 任せる（今日の主役）</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: Cowork の入口</span>ここから先は「仕事を頼む」モード</span><span class="do">Cowork を開く</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: プロジェクト作成</span><strong>事業ごとの箱</strong>。ファイル・指示・記憶をここに貯める</span><span class="do">自分の事業名でプロジェクトを作る</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 入力欄「Work in a folder」</span><strong>フォルダを選ぶ＝その中の読み書きを許可</strong>。外には触れない<span class="sub">だから練習用フォルダを作ってから渡すのが作法</span></span><span class="do"><code>claude-practice</code> を選ぶ</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 最初の依頼</span>空でも「空です」と返れば接続OK</span><span class="do">「このフォルダに何が入ってる？」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 進捗表示・許可ダイアログ</span><strong>読んでから OK</strong>。だいたい大丈夫、読む癖だけ</span><span class="do">練習ファイルを2〜3個入れて「中身を整理して一覧にして」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 停止・追加指示</span>暴走したらここで止める</span><span class="do">途中で止める／追加で指示する、を一度やる</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: フォルダに成果物が出る</span><strong>これがチャットとの違い</strong>。ファイルが残る</span><span class="do">Finder／エクスプローラで確認</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 事業について.md</span><strong>社員への引き継ぎ書</strong>。次回も講座後も効き続ける</span><span class="do">「私の事業の引き継ぎ書を作りたい。質問して」→ 答えてファイルにする</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="4">
+  <div class="head"><span class="no">STEP 4<span class="min">5分</span></span><h2>設定のお作法</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 設定 → プライバシー</span><strong>「モデル改善への協力」は初期値オン</strong></span><span class="do">オフにする</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 使用量</span>「急に返事が来ない」の主因</span><span class="do">場所を見ておく</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: モデル選択（再）</span>普段は軽く、詰まったら上げる</span><span class="do">復習</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: メモリ設定</span><strong>学習オフにしてもメモリは残る</strong><span class="sub">学習＝Anthropic のモデル改善に使う設定 / メモリ＝あなたの Claude があなたを覚える。別物</span></span><span class="do">区別を頭に入れる</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="5">
+  <div class="head"><span class="no">STEP 5<span class="min">30分</span></span><h2>ハンズオン ＝ 仕事を1つ任せる</h2><span class="stat"></span></div>
+  <div class="body">
+    <div class="warn"><strong>お題カタログはスタート地点、ゴールではない。</strong> 注文を足すほど、あなただけのアウトプットになる。そのこだわりが商売の価値そのもの。</div>
+    <label class="item simple"><input type="checkbox"><span class="t">コースを選ぶ: <strong>①調べる</strong>（市場・競合・ターゲット調査） <strong>②書く</strong>（お知らせ・案内文・SNS） <strong>③整える</strong>（ファイル整理・表・写真仕分け）</span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">カタログのお題をそのまま貼って、まず1回やらせる</span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">出てきたものの<strong>違和感をそのまま言う</strong><span class="sub">「うちの客層は違う」「もっと短く」「この言い方は嫌い」「ここは譲れない」</span></span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">もう一度やらせる → 自分の事業の答えに近づいたか</span></label>
+    <div class="quote">巡回の魔法の質問: 「どこが違和感ありますか？ それをそのまま言ってください」</div>
+  </div>
+</section>
+
+<section class="step" data-step="6">
+  <div class="head"><span class="no">STEP 6<span class="min">2分</span></span><h2>覚えさせて帰る（忘れずに）</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 同じセッションで続けて一言</span><strong>人間の新人と同じ。「これ良かった、次もこれで」で育つ</strong></span><span class="do">「今日やったことで、うまくいったやり方を覚えておいて。次からはそのやり方でお願い」</span></label>
+    <label class="item"><input type="checkbox"><span class="t">失敗も伝える</span><span class="do">「○○のやり方は合わなかった。次はしないで」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 事業について.md</span>引き継ぎ書を更新</span><span class="do">「今日分かった私の好みを、事業について.md に追記して」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 新規チャット</span>覚えているか確認</span><span class="do">「私の事業は何？」</span></label>
+    <label class="item"><input type="checkbox"><span class="t"><span class="screen">見せる画面: 今日の成果を1枚に</span><strong>来週の材料</strong>。講師はブリューパブの「開業計画1枚」を見せる</span><span class="do">「今日の成果を、1枚（Artifact）にまとめて」→ 来週これを元に動くものを作る</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="7">
+  <div class="head"><span class="no">STEP 7<span class="min">余裕があれば</span></span><h2>もう少し先へ</h2><span class="stat"></span></div>
+  <div class="body">
+    <label class="item simple"><input type="checkbox"><span class="t">スマホの Claude アプリで、PC の今日の会話が見えるか<span class="sub">移動中に続きができる</span></span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">Cowork の<strong>内蔵ブラウザ</strong>で、ログインが必要なサイトの中で働かせてみる<span class="sub">Settings &gt; Cowork &gt; Preferred browser。送信・購入・削除は必ず自分で確認。自分の Chrome の中で働かせたい人は Chrome 拡張</span></span></label>
+    <label class="item simple"><input type="checkbox"><span class="t"><strong>Claude Design</strong> で自分の事業のロゴ or チラシを1枚<span class="sub">「○○のロゴ、あたたかい色で3案」→ 気になる所をクリックして一言で直す</span></span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">メモリ管理画面で、何を覚えているか眺める（消せる）</span></label>
+    <label class="item simple"><input type="checkbox"><span class="t">シークレット（メモリに残らない）チャットの入口</span></label>
+  </div>
+</section>
+
+<section class="step" data-step="8">
+  <div class="head"><span class="no">MEMO</span><h2>約束事・つまずいたら・持ち帰り</h2><span class="stat"></span></div>
+  <div class="body">
+    <div class="warn">本番ファイルではなく<strong>コピーした練習用フォルダ</strong> / 今日は<strong>個人情報・機密情報のファイルは使わない</strong> / 許可を求められたら<strong>読んでから OK</strong></div>
+    <table class="small">
+      <tr><th>症状</th><th>まず見る所</th></tr>
+      <tr><td>Cowork が見当たらない</td><td>アプリが古い → アップデート</td></tr>
+      <tr><td>ログインできない / 別アカウント</td><td>ログアウト → ログインし直す</td></tr>
+      <tr><td>急に返事が来ない</td><td>使用量画面 / 軽いモデルに切替</td></tr>
+      <tr><td>フォルダが選べない（Windows）</td><td>デスクトップかドキュメントの下に作り直す</td></tr>
+      <tr><td>許可ダイアログで固まる</td><td>読んで OK</td></tr>
+      <tr><td>何が起きたか分からない</td><td>スクショを貼って「いま何したの？」</td></tr>
+    </table>
+    <div class="three">
+      <div><b>1. 問いを立てて、足りないデータを取りに行く</b>それが起業家の仕事で、作業は AI がやる</div>
+      <div><b>2. 迷ったらカタログから。でも、こだわりを足す</b>それがあなただけのアウトプットになる</div>
+      <div><b>3. うまくいったら、覚えさせて帰る</b>あなたの社員は、使うほど育つ</div>
+    </div>
+    <label class="item simple"><input type="checkbox"><span class="t">持ち帰り3つを読み上げて終わる</span></label>
+  </div>
+</section>
+
+<div id="alldone">全部やった。あとは本番。</div>
+</main>
+<footer>
+  <button id="reset">チェックをリセット</button>
+  <span>チェック状態はこのブラウザに保存されます（<code>sanka-checklist.md</code> が原本）</span>
+</footer>
+<script>
+  const KEY = 'sanka-inzai-v1';
+  const boxes = [...document.querySelectorAll('input[type=checkbox]')];
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  boxes.forEach((b, i) => {
+    b.dataset.i = i;
+    if (saved[i]) b.checked = true;
+    b.addEventListener('change', update);
+  });
+  document.querySelectorAll('.step .head').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    if (!confirm('すべてのチェックをリセットしますか？')) return;
+    boxes.forEach(b => b.checked = false);
+    update();
+  });
+  function update() {
+    const state = {};
+    boxes.forEach((b, i) => { state[i] = b.checked; b.closest('label').classList.toggle('done', b.checked); });
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    const done = boxes.filter(b => b.checked).length;
+    document.getElementById('fill').style.width = (done / boxes.length * 100) + '%';
+    document.getElementById('count').textContent = `${done} / ${boxes.length} 完了`;
+    document.querySelectorAll('.step').forEach(s => {
+      const bs = [...s.querySelectorAll('input')];
+      const d = bs.filter(b => b.checked).length;
+      const stat = s.querySelector('.stat');
+      stat.textContent = `${d}/${bs.length}`;
+      stat.classList.toggle('all', d === bs.length);
+    });
+    document.getElementById('alldone').style.display = done === boxes.length ? 'block' : 'none';
+  }
+  update();
+</script>
+</body>
+</html>
